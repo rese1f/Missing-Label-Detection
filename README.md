@@ -29,6 +29,7 @@ below.
         ├── checkpoints
         ├── experiments
         ├── image
+        ├── log
         ├── models
         │   ├── mnet.py
         │   └── net.py
