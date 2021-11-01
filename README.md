@@ -27,7 +27,6 @@ below.
 ### Project Structure
     Missing-Label-Detection
         ├── checkpoints
-        ├── experiments
         ├── image
         ├── log
         ├── models
@@ -39,7 +38,7 @@ below.
         ├── utils
         │   ├── criterion.py
         │   └── datasets.py
-        ├── config.py
+        ├── configs.py
         ├── LICENSE
         ├── README.md
         ├── requirements.txt
