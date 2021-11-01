@@ -15,8 +15,10 @@ from models.net import Net
 from models.mnet import MNet
 
 torch.set_printoptions(precision=None, threshold=4096, edgeitems=None, linewidth=None, profile=None)
-if not os.path.exists('./log'): os.mkdir('./log')
-if not os.path.exists('./checkpoints'): os.mkdir('./checkpoints')
+if not os.path.exists('./log'):
+    os.mkdir('./log')
+if not os.path.exists('./checkpoints'):
+    os.mkdir('./checkpoints')
 writer = SummaryWriter('./log')
 args = parse_args()
 print(args)
