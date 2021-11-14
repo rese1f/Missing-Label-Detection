@@ -30,14 +30,14 @@ below.
         ├── image
         ├── log
         ├── models
-        │   ├── mnet.py
         │   └── net.py
         ├── tools
         │   ├── eval.py
         │   └── train.py
         ├── utils
         │   ├── criterion.py
-        │   └── datasets.py
+        │   ├── datasets.py
+        │   └── visulise.py
         ├── configs.py
         ├── LICENSE
         ├── README.md

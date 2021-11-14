@@ -131,3 +131,6 @@ dmypy.json
 # log
 /log
 /checkpoints
+
+# api
+/cocoapi

@@ -6,4 +6,5 @@ class Net(nn.Module):
         super(Net, self).__init__()
     
     def forward(self, x):
+
         return
