@@ -5,8 +5,8 @@
 ### Author: 
 - Wenhao, Chai
 - Chenhao, Li
-- Mu, Xie
 - Han, Yang
+- Mu, Xie
 
 ### Project Background
 
@@ -27,6 +27,7 @@ below.
 ### Project Structure
     Missing-Label-Detection
         ├── checkpoints
+        ├── cocoapi
         ├── image
         ├── log
         ├── models
