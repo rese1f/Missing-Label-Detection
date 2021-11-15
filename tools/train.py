@@ -27,7 +27,11 @@ if __name__ == '__main__':
     trainset = CocoDetection(args.dataset, 'train', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
     
-    train_iter = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, pin_memory=True)
+    train_iter = DataLoader(trainset,
+                            batch_size=args.batch_size,
+                            shuffle=True,
+                            collate_fn=trainset.collate_fn,
+                            pin_memory=True)
     for img, targets in train_iter:
-        continue
+        print(targets)
     

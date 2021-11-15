@@ -25,8 +25,8 @@ class CocoDetection(data.Dataset):
         self.root = os.path.join(root, stage) 
         self.coco = COCO(os.path.join(root, 'annotation', stage + '.json'))
         self.ids = list(sorted(self.coco.imgs.keys()))
-
         self.img_size = img_size
+        self.batch_count = 0
 
     def __getitem__(self, index):
 
@@ -87,6 +87,20 @@ class CocoDetection(data.Dataset):
         targets = torch.zeros((len(bboxes), 6))
         targets[:, 1:] = bboxes
         return img, targets
+    
+    def collate_fn(self, batch):
+        """将数据和标签拼接成batch"""
+        imgs, targets = list(zip(*batch))
+        # Remove empty placeholder targets
+        targets = [bboxes for bboxes in targets if bboxes is not None]
+        # Add sample index to targets
+        for i, bboxes in enumerate(targets):
+            bboxes[:, 0] = i # 使用索引表示哪些bboxes对应batch中的那张图片 此时bboxes的格式为(index,category,x,y,w,h)
+        targets = torch.cat(targets, 0) #拼接
+    
+        imgs = torch.stack([img for img in imgs])
+        self.batch_count += 1
+        return imgs, targets
     
     def __len__(self):
         return len(self.ids)
