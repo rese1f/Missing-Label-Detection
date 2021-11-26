@@ -23,36 +23,22 @@ if __name__ == '__main__':
     writer = SummaryWriter('./log')
     args = parse_args()
     print(args)
+    
+    model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1).cuda()
 
     trainset = CocoDetection(args.dataset, 'train', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
-    
     train_iter = DataLoader(trainset,
                             batch_size=args.batch_size,
                             shuffle=True,
                             collate_fn=trainset.collate_fn,
                             pin_memory=True)
-    # for img, targets in train_iter:
-        # print('img shape:',np.shape(img))
-        # print('print target',targets)
-        # continue
     val_iter = DataLoader(valset,
-                        batch_size=args.batch_size,
+                        batch_size=1,
                         shuffle=True,
                         collate_fn=trainset.collate_fn,
                         pin_memory=True)
-    # for img, targets in val_iter:
-        # print(targets)
-        # continue
     
-    # # Print statistic info of img shape before and after interpolation
-    # print('trainset.shape_before_dic',trainset.shape_before_dic)
-    # print('trainset.shape_after_dic',trainset.shape_after_dic)
-    # print('valset.shape_before_dic',valset.shape_before_dic)
-    # print('valset.shape_after_dic',valset.shape_after_dic)
-    
-    # # print the number of img with no label
-    # print('train:',trainset.empty_label_number) 
-
-
-    model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
+    for img, targets in train_iter:
+        # p = model(img)
+        continue
