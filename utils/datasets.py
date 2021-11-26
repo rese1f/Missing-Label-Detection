@@ -27,6 +27,10 @@ class CocoDetection(data.Dataset):
         self.ids = list(sorted(self.coco.imgs.keys()))
         self.img_size = img_size
         self.batch_count = 0
+        self.empty_label_number = 0 # the number of imgs with no annotation
+        self.shape_before_dic = {}
+        self.shape_after_dic = {}
+
 
     def __getitem__(self, index):
 
@@ -51,8 +55,19 @@ class CocoDetection(data.Dataset):
         _, padded_h, padded_w = img.shape
 
         # Resize
+        # print('before',np.shape(img))
+        if(np.shape(img) in self.shape_before_dic):
+            self.shape_before_dic[np.shape(img)] += 1
+        else:
+            self.shape_before_dic[np.shape(img)] = 1
+            
         img = F.interpolate(img.unsqueeze(0), size=self.img_size, mode="nearest").squeeze(0)
-
+        
+        # print('after',np.shape(img))
+        if(np.shape(img) in self.shape_after_dic):
+            self.shape_after_dic[np.shape(img)] += 1
+        else:
+            self.shape_after_dic[np.shape(img)] = 1
         #==============
         # labels
         # =============
@@ -67,6 +82,12 @@ class CocoDetection(data.Dataset):
         
         bboxes = torch.from_numpy(np.array(bboxes))
 
+        # TODO To handle no target imgae. For now, add a box cover the whole img
+        if(np.shape(bboxes)==torch.Size([0])):
+            # add a box target cover the whole img
+            bboxes = torch.tensor([[  0.0000, 0.0000, 0.0000,  w,  h]])
+            self.empty_label_number += 1
+            
         # Extract coordinates for unpadded + unscaled image（这好像计算出来的是bbox左上和右下两点的坐标）
         x1 = (bboxes[:, 1])
         y1 = (bboxes[:, 2])
@@ -96,8 +117,9 @@ class CocoDetection(data.Dataset):
         # Add sample index to targets
         for i, bboxes in enumerate(targets):
             bboxes[:, 0] = i # 使用索引表示哪些bboxes对应batch中的那张图片 此时bboxes的格式为(index,category,x,y,w,h)
-        targets = torch.cat(targets, 0) #拼接
-    
+            # print('index',i,'\nbboxes',bboxes)
+            # print(np.shape(bboxes))
+        targets = torch.cat(targets, 0) #拼接 #TODO 不同标签annotation的box个数不相同
         imgs = torch.stack([img for img in imgs])
         self.batch_count += 1
         return imgs, targets
