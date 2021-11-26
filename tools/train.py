@@ -24,7 +24,7 @@ if __name__ == '__main__':
     args = parse_args()
     print(args)
     
-    model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1).cuda()
+    model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
 
     trainset = CocoDetection(args.dataset, 'train', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
                             pin_memory=True)
     val_iter = DataLoader(valset,
                         batch_size=1,
-                        shuffle=True,
+                        shuffle=False,
                         collate_fn=trainset.collate_fn,
                         pin_memory=True)
     
