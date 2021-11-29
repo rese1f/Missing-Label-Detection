@@ -31,15 +31,23 @@ below.
         ├── image
         ├── log
         ├── models
-        │   └── net.py
+        │   ├── common.py
+        │   ├── experimental.py
+        │   ├── yolo.py
+        │   └── yolov5m.yaml
         ├── tools
         │   ├── eval.py
         │   └── train.py
         ├── utils
+        │   ├── autoanchor.py
         │   ├── criterion.py
         │   ├── datasets.py
+        │   ├── general.py
+        │   ├── google_utils.py
+        │   ├── metrics.py
+        │   ├── torch_utils.py
         │   └── visulise.py
         ├── configs.py
         ├── LICENSE
         ├── README.md
-        ├── requirements.txt
+        └── requirements.txt

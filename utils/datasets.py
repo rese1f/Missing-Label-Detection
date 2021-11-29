@@ -12,13 +12,19 @@ import matplotlib.pyplot as plt
 
 
 class CocoDetection(data.Dataset):
-    """
-    Args:
-        root (string): Root directory where images are downloaded to.
-        annFile (string): Path to json annotation file.
-        
-    """
+
     def __init__(self, root, stage, img_size):
+        """
+        Discription: Initialize the class CocoDetection.
+
+        Args:
+            root (string): Root directory where images are downloaded to.
+            stage (string): Path to json annotation file.
+            img_size (int): Target image size.
+            
+        Return:
+            null
+        """
         super(CocoDetection,self).__init__()
         print('=====================')
         print('Loading {} dataset...'.format(stage))
@@ -33,6 +39,7 @@ class CocoDetection(data.Dataset):
 
 
     def __getitem__(self, index):
+
 
         coco = self.coco
         img_id = self.ids[index]
