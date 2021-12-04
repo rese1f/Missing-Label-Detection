@@ -9,7 +9,7 @@ def parse_args():
                         help='name of checkpoint model weight')
     parser.add_argument('--batch-size', default=36, type=int,
                         help='training batch size')
-    parser.add_argument('--epoch', default=10, type=int,
+    parser.add_argument('--epoch', default=120, type=int,
                         help='training epoch')
     parser.add_argument('--lr', default=0.01, type=float,
                         help='learning rate')
