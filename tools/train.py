@@ -1,4 +1,5 @@
 import argparse
+from typing import IO
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
@@ -16,7 +17,7 @@ from configs import parse_args
 from utils.criterion import *
 from utils.datasets import CocoDetection
 from models.yolo import Model
-
+from utils.general import nms
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=None, threshold=4096, edgeitems=None, linewidth=None, profile=None)
@@ -56,7 +57,7 @@ if __name__ == '__main__':
             img, targets = img.cuda(), targets.cuda()
             p = model(img)
             compute_loss = ComputeLoss(model)
-            loss, losses = compute_loss(p, targets)
+            loss, losses, _, _ = compute_loss(p, targets)
             SGD.zero_grad()
             loss.backward()
             SGD.step()
@@ -67,4 +68,19 @@ if __name__ == '__main__':
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('box_loss', box_loss, epoch)
         writer.add_scalar('obj_loss', obj_loss, epoch)
+        
+        model.eval()
+        iou_list = list()
+        for img, targets in val_iter:
+            img, targets = img.cuda(), targets.cuda()
+            p = model(img)
+            compute_loss = ComputeLoss(model)
+            _, _, pbox, score_iou = compute_loss(p, targets)
+            bboxes = nms(pbox, score_iou)
+            iou_list.append(score_iou.detach().cpu().numpy())
+        iou = np.mean(iou_list)
+        writer.add_scalar('iou', iou, epoch)
+        
     writer.close()
+    torch.save(model.state_dict(), 'checkpoints/ck.pth')
+    
