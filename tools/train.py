@@ -79,7 +79,7 @@ if __name__ == '__main__':
             box = nms(pbox, score_iou)
             iou_list.append(score_iou.detach().cpu().numpy())
             # if i == 0:
-                #writer.add_image_with_boxes('img', img_tensor=img[0], box_tensor=box)
+            #    writer.add_image_with_boxes()
         iou = np.mean(iou_list)
         writer.add_scalar('iou', iou, epoch)
         
