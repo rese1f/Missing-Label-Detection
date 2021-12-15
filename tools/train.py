@@ -71,13 +71,15 @@ if __name__ == '__main__':
         
         model.eval()
         iou_list = list()
-        for img, targets in val_iter:
+        for i, (img, targets) in enumerate(val_iter):
             img, targets = img.cuda(), targets.cuda()
             p = model(img)
             compute_loss = ComputeLoss(model)
             _, _, pbox, score_iou = compute_loss(p, targets)
-            bboxes = nms(pbox, score_iou)
+            box = nms(pbox, score_iou)
             iou_list.append(score_iou.detach().cpu().numpy())
+            # if i == 0:
+                #writer.add_image_with_boxes('img', img_tensor=img[0], box_tensor=box)
         iou = np.mean(iou_list)
         writer.add_scalar('iou', iou, epoch)
         

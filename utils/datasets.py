@@ -120,6 +120,7 @@ class CocoDetection(data.Dataset):
         """将数据和标签拼接成batch"""
         imgs, targets = list(zip(*batch))
         # Remove empty placeholder targets
+        # target [index of imag, category, x, y, w, h]
         targets = [bboxes for bboxes in targets if bboxes is not None]
         # Add sample index to targets
         for i, bboxes in enumerate(targets):
