@@ -531,4 +531,8 @@ def nms(bboxes, scores, threshold=0.5):
         if idx.numel() == 0:
             break
         order = order[idx+1]  # 修补索引之间的差值
-    return bboxes[torch.LongTensor(keep)]  # Pytorch的索引值为LongTensor
+    return bboxes[torch.LongTensor(keep)], scores[torch.LongTensor(keep)]  # Pytorch的索引值为LongTensor
+
+def make_box(box):
+    return 640*torch.stack([box[:,0]-0.5*box[:,2],box[:,1]-0.5*box[:,3],box[:,0]+0.5*box[:,2],box[:,1]+0.5*box[:,3]]).T
+ 

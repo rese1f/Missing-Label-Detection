@@ -91,8 +91,9 @@ class CocoDetection(data.Dataset):
 
         # TODO To handle no target imgae. For now, add a box cover the whole img
         if(np.shape(bboxes)==torch.Size([0])):
+            return img, None
             # add a box target cover the whole img
-            bboxes = torch.tensor([[  0.0000, 0.0000, 0.0000,  w,  h]])
+            bboxes = torch.tensor([[  1.0000, 0.0000, 0.0000,  w,  h]])
             self.empty_label_number += 1
             
         # Extract coordinates for unpadded + unscaled image（这好像计算出来的是bbox左上和右下两点的坐标）
