@@ -5,13 +5,13 @@ def parse_args():
     
     parser.add_argument('--dataset', default='/mnt/sdb/MLD', type=str,
                         help='path to dataset')
-    parser.add_argument('--checkpoint', default='ck.pth',type=str,
+    parser.add_argument('--checkpoint', default='',type=str,
                         help='name of checkpoint model weight')
-    parser.add_argument('--batch-size', default=36, type=int,
+    parser.add_argument('--batch-size', default=32, type=int,
                         help='training batch size')
-    parser.add_argument('--epoch', default=240, type=int,
+    parser.add_argument('--epoch', default=120, type=int,
                         help='training epoch')
-    parser.add_argument('--lr', default=0.02, type=float,
+    parser.add_argument('--lr', default=0.01, type=float,
                         help='learning rate')
     parser.add_argument('--size', default=640, type=int,
                         help='image size')
