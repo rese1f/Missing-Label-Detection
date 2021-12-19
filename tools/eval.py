@@ -33,8 +33,7 @@ if __name__ == '__main__':
     
     model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
     model = nn.DataParallel(model).cuda()
-    if args.checkpoint:
-        model.load_state_dict(torch.load(os.path.join('./checkpoints', args.checkpoint)))
+    model.load_state_dict(torch.load(os.path.join('./checkpoints', 'ck.pth')))
 
     valset = CocoDetection(args.dataset, 'val', args.size)
 
@@ -54,13 +53,12 @@ if __name__ == '__main__':
     for i, (img, targets) in enumerate(val_iter):
         img, targets = img.cuda(), targets.cuda()
         p, _ = model(img)
-        pred = non_max_suppression(p)
+        pred = non_max_suppression(p)[0]
         try:
-            box, score = pred[:,:4], pred[:,5:]
-            pred_box_tensor = make_box(box)
+            pred_box_tensor, score = pred[:,:4], pred[:,4]
             gt_box_tensor = make_box(targets[:,2:])
             img = img.squeeze(0)
-            score_str = [str(x) for x in score.tolist()]
+            score_str = [str(x)[:5] for x in score.tolist()]
             writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
             writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
         except:

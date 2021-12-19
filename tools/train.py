@@ -38,11 +38,11 @@ if __name__ == '__main__':
 
     trainset = CocoDetection(args.dataset, 'train', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
-    train_iter = DataLoader(valset,
+    train_iter = DataLoader(trainset,
                             batch_size=args.batch_size,
                             shuffle=True,
                             num_workers=16,
-                            collate_fn=valset.collate_fn,
+                            collate_fn=trainset.collate_fn,
                             pin_memory=True)
     val_iter = DataLoader(valset,
                         batch_size=1,
@@ -83,16 +83,19 @@ if __name__ == '__main__':
                 p, _ = model(img)
                 pred = non_max_suppression(p)
                 if (i == 0):
-                    box, score = pred[:,:4], pred[:,5:]
-                    pred_box_tensor = make_box(box)
-                    gt_box_tensor = make_box(targets[:,2:])
-                    img = img.squeeze(0)
-                    score_str = [str(x) for x in score.tolist()]
-                    writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=epoch)
-                    writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=epoch, labels=score_str)
-                break
+                    p, _ = model(img)
+                    pred = non_max_suppression(p)[0]
+                    try:
+                        pred_box_tensor, score = pred[:,:4], pred[:,4]
+                        gt_box_tensor = make_box(targets[:,2:])
+                        img = img.squeeze(0)
+                        score_str = [str(x)[:5] for x in score.tolist()]
+                        writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
+                        writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
+                    except:
+                        pass
         pbar.update(1)
         
     writer.close()
-    torch.save(model.state_dict(), 'checkpoints/ck.pth')
+    torch.save(model.state_dict(), 'checkpoints/baseline.pth')
        
