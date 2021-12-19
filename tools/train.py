@@ -1,5 +1,4 @@
 import argparse
-from typing import IO
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
@@ -39,11 +38,11 @@ if __name__ == '__main__':
 
     trainset = CocoDetection(args.dataset, 'train', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
-    train_iter = DataLoader(trainset,
+    train_iter = DataLoader(valset,
                             batch_size=args.batch_size,
                             shuffle=True,
                             num_workers=16,
-                            collate_fn=trainset.collate_fn,
+                            collate_fn=valset.collate_fn,
                             pin_memory=True)
     val_iter = DataLoader(valset,
                         batch_size=1,
