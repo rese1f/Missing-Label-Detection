@@ -18,7 +18,7 @@ from configs import parse_args
 from utils.criterion import *
 from utils.datasets import CocoDetection
 from models.yolo import Model
-from utils.general import nms, make_box
+from utils.general import non_max_suppression, make_box
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=None, threshold=4096, edgeitems=None, linewidth=None, profile=None)
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             img, targets = img.cuda(), targets.cuda()
             p = model(img)
             compute_loss = ComputeLoss(model)
-            loss, losses, _, _ = compute_loss(p, targets)
+            loss, losses = compute_loss(p, targets)
             SGD.zero_grad()
             loss.backward()
             SGD.step()
@@ -76,17 +76,14 @@ if __name__ == '__main__':
         writer.add_scalar('box_loss', box_loss, epoch)
         writer.add_scalar('obj_loss', obj_loss, epoch)
         
-        # model.eval()
+        model.eval()
         if args.val and (epoch % 20 == 10):
-            iou_list = list()
             for i, (img, targets) in enumerate(val_iter):
                 img, targets = img.cuda(), targets.cuda()
-                p = model(img)
-                compute_loss = ComputeLoss(model)
-                _, _, pbox, score_iou = compute_loss(p, targets)
-                box, score = nms(pbox, score_iou)
-                iou_list.append(torch.mean(score).detach().cpu().numpy())
-                if i == 0:
+                p, _ = model(img)
+                pred = non_max_suppression(p)
+                if (i == 0):
+                    box, score = pred[:,:4], pred[:,5:]
                     pred_box_tensor = make_box(box)
                     gt_box_tensor = make_box(targets[:,2:])
                     img = img.squeeze(0)
@@ -94,8 +91,6 @@ if __name__ == '__main__':
                     writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=epoch)
                     writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=epoch, labels=score_str)
                 break
-            iou = np.mean(iou_list)
-            writer.add_scalar('iou', iou, epoch)
         pbar.update(1)
         
     writer.close()

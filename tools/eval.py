@@ -18,7 +18,7 @@ from configs import parse_args
 from utils.criterion import *
 from utils.datasets import CocoDetection
 from models.yolo import Model
-from utils.general import nms, make_box
+from utils.general import non_max_suppression, make_box
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=None, threshold=4096, edgeitems=None, linewidth=None, profile=None)
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         os.mkdir('./checkpoints')
     writer = SummaryWriter('./log')
     args = parse_args()
-    print(args)
+    # print(args)
     
     model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
     model = nn.DataParallel(model).cuda()
@@ -50,24 +50,22 @@ if __name__ == '__main__':
     print("Done Pre.")
     pbar = tqdm(total = valset.__len__())
     
-    # model.eval()
-    iou_list = list()
+    model.eval()
     for i, (img, targets) in enumerate(val_iter):
         img, targets = img.cuda(), targets.cuda()
-        p = model(img)
-        compute_loss = ComputeLoss(model)
-        _, _, pbox, score_iou = compute_loss(p, targets)
-        box, score = nms(pbox, score_iou)
-        iou_list.append(torch.mean(score).detach().cpu().numpy())
-        pred_box_tensor = make_box(box)
-        gt_box_tensor = make_box(targets[:,2:])
-        img = img.squeeze(0)
-        score_str = [str(x) for x in score.tolist()]
-        writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
-        writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
+        p, _ = model(img)
+        pred = non_max_suppression(p)
+        try:
+            box, score = pred[:,:4], pred[:,5:]
+            pred_box_tensor = make_box(box)
+            gt_box_tensor = make_box(targets[:,2:])
+            img = img.squeeze(0)
+            score_str = [str(x) for x in score.tolist()]
+            writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
+            writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
+        except:
+            pass
         pbar.update(1)
-    iou = np.mean(iou_list)
-    print('iou:', iou)
 
     writer.close()
        
