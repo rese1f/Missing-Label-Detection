@@ -43,8 +43,6 @@ if __name__ == '__main__':
                         num_workers=16,
                         collate_fn=valset.collate_fn,
                         pin_memory=True)
-
-    SGD = optim.SGD(model.parameters(), lr=args.lr)
     
     print("Done Pre.")
     pbar = tqdm(total = valset.__len__())

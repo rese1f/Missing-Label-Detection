@@ -51,26 +51,29 @@ if __name__ == '__main__':
                         collate_fn=valset.collate_fn,
                         pin_memory=True)
 
-    SGD = optim.SGD(model.parameters(), lr=args.lr)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.0005)
+    lf = lambda x: ((1 + np.cos(x * np.pi / args.epoch)) / 2) * (1 - 0.12) + 0.12  # cosine
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     
     print("Done Pre.")
     pbar = tqdm(total = args.epoch)
     
     for epoch in range(args.epoch):
         model.train()
-        loss_list, box_loss_list, obj_loss_list = list(), list(), list()
-        
+        loss_list, box_loss_list, obj_loss_list, lr_list = list(), list(), list(), list()
+        writer.add_scalar('lr', optimizer.state_dict()['param_groups'][0]['lr'], epoch)
         for img, targets in train_iter:
             img, targets = img.cuda(), targets.cuda()
             p = model(img)
             compute_loss = ComputeLoss(model)
             loss, losses = compute_loss(p, targets)
-            SGD.zero_grad()
+            optimizer.zero_grad()
             loss.backward()
-            SGD.step()
+            optimizer.step()
             loss_list.append(loss.detach().cpu().numpy())
             box_loss_list.append(losses[0].detach().cpu().numpy())
             obj_loss_list.append(losses[1].detach().cpu().numpy())
+        scheduler.step()
         loss, box_loss, obj_loss = np.mean(loss_list), np.mean(box_loss_list), np.mean(obj_loss_list)
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('box_loss', box_loss, epoch)
