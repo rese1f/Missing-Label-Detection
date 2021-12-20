@@ -18,7 +18,7 @@ from configs import parse_args
 from utils.criterion import *
 from utils.datasets import CocoDetection
 from models.yolo import Model
-from utils.general import non_max_suppression, make_box
+from utils.general import non_max_suppression, make_box, calculate_ap
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=None, threshold=4096, edgeitems=None, linewidth=None, profile=None)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     
     model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
     model = nn.DataParallel(model).cuda()
-    model.load_state_dict(torch.load(os.path.join('./checkpoints', 'ck.pth')))
+    model.load_state_dict(torch.load(os.path.join('./checkpoints', 'baseline.pth')))
 
     valset = CocoDetection(args.dataset, 'val', args.size)
 
@@ -52,16 +52,16 @@ if __name__ == '__main__':
         img, targets = img.cuda(), targets.cuda()
         p, _ = model(img)
         pred = non_max_suppression(p)[0]
-        try:
-            pred_box_tensor, score = pred[:,:4], pred[:,4]
-            gt_box_tensor = make_box(targets[:,2:])
-            img = img.squeeze(0)
-            score_str = [str(x)[:5] for x in score.tolist()]
-            writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
-            writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
-        except:
-            pass
+        pred_box_tensor, score = pred[:,:4], pred[:,4]
+        gt_box_tensor = make_box(targets[:,2:])
+        img = img.squeeze(0)
+        score_str = [str(x)[:5] for x in score.tolist()]
+        # if (i % 100 == 50):
+        #     writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
+        #     writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
+        ap = calculate_ap(pred_box_tensor, score, gt_box_tensor)
+        import pdb
+        pdb.set_trace()
         pbar.update(1)
 
     writer.close()
-       
