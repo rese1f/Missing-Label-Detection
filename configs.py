@@ -2,7 +2,8 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Experience script')
-    
+    parser.add_argument('--name', default='test', type=str,
+                        help='name for test')
     parser.add_argument('--dataset', default='/mnt/sdb/MLD', type=str,
                         help='path to dataset')
     parser.add_argument('--checkpoint', default='',type=str,

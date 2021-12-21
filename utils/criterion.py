@@ -90,7 +90,7 @@ class ComputeLoss:
         self.sort_obj_iou = False
         device = next(model.parameters()).device  # get model device
         h = {
-            'fl_gamma': 0.0,
+            'fl_gamma': 0,
             'cls_pw': 1.0,
             'obj_pw': 1.0,
             'box': 0.05,
@@ -141,6 +141,7 @@ class ComputeLoss:
             lbox += (1.0 - iou).mean()  # iou loss
 
             # Objectness
+            
             score_iou = iou.detach().clamp(0).type(tobj.dtype)
             if self.sort_obj_iou:
                 sort_id = torch.argsort(score_iou)
@@ -148,10 +149,10 @@ class ComputeLoss:
             tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * score_iou  # iou ratio
 
             # Classification
-            if self.nc > 1:  # cls loss (only if multiple classes)
-                t = torch.full_like(ps[:, 5:], self.cn, device=device)  # targets
-                t[range(n), tcls[i]] = self.cp
-                lcls += self.BCEcls(ps[:, 5:], t)  # BCE
+            # if self.nc > 1:  # cls loss (only if multiple classes)
+            #     t = torch.full_like(ps[:, 5:], self.cn, device=device)  # targets
+            #     t[range(n), tcls[i]] = self.cp
+            #     lcls += self.BCEcls(ps[:, 5:], t)  # BCE
 
             # Append targets to text file
             # with open('targets.txt', 'a') as file:

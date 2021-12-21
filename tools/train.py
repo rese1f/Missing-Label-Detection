@@ -27,9 +27,9 @@ if __name__ == '__main__':
         os.mkdir('./log')
     if not os.path.exists('./checkpoints'):
         os.mkdir('./checkpoints')
-    writer = SummaryWriter('./log')
     args = parse_args()
     print(args)
+    writer = SummaryWriter(os.path.join('./log', args.name))
     
     model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
     model = nn.DataParallel(model).cuda()
@@ -52,8 +52,8 @@ if __name__ == '__main__':
                         pin_memory=True)
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.0005)
-    lf = lambda x: ((1 + np.cos(x * np.pi / args.epoch)) / 2) * (1 - 0.12) + 0.12  # cosine
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
+    # lf = lambda x: ((1 + np.cos(x * np.pi / args.epoch)) / 2) * (1 - 0.12) + 0.12  # cosine
+    # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     
     print("Done Pre.")
     pbar = tqdm(total = args.epoch)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     for epoch in range(args.epoch):
         model.train()
         loss_list, box_loss_list, obj_loss_list, lr_list = list(), list(), list(), list()
-        writer.add_scalar('lr', optimizer.state_dict()['param_groups'][0]['lr'], epoch)
+        # writer.add_scalar('lr', optimizer.state_dict()['param_groups'][0]['lr'], epoch)
         for img, targets in train_iter:
             img, targets = img.cuda(), targets.cuda()
             p = model(img)
@@ -73,14 +73,14 @@ if __name__ == '__main__':
             loss_list.append(loss.detach().cpu().numpy())
             box_loss_list.append(losses[0].detach().cpu().numpy())
             obj_loss_list.append(losses[1].detach().cpu().numpy())
-        scheduler.step()
+        # scheduler.step()
         loss, box_loss, obj_loss = np.mean(loss_list), np.mean(box_loss_list), np.mean(obj_loss_list)
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('box_loss', box_loss, epoch)
         writer.add_scalar('obj_loss', obj_loss, epoch)
         
-        model.eval()
         if args.val and (epoch % 20 == 10):
+            model.eval()
             for i, (img, targets) in enumerate(val_iter):
                 img, targets = img.cuda(), targets.cuda()
                 p, _ = model(img)
@@ -100,5 +100,5 @@ if __name__ == '__main__':
         pbar.update(1)
         
     writer.close()
-    torch.save(model.state_dict(), 'checkpoints/baseline.pth')
+    torch.save(model.state_dict(), os.path.join('checkpoints', args.name+'.pth'))
        

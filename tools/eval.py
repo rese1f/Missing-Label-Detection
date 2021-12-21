@@ -59,7 +59,12 @@ if __name__ == '__main__':
         # if (i % 100 == 50):
         #     writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
         #     writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
+        # (N,4) (N,1) (M,4)
+        pred_box_tensor=gt_box_tensor
+        score=torch.tensor([[1],[1]]).cuda()
         ap = calculate_ap(pred_box_tensor, score, gt_box_tensor)
+        
+        # but all the ap == 0 calculate by this
         import pdb
         pdb.set_trace()
         pbar.update(1)

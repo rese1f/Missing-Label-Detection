@@ -574,9 +574,13 @@ def calculate_tp(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thr
         ious[i] = inter / (area_pb + area_gb - inter)
     # 每个预测框的最大iou所对应的gt记为其匹配的gt
     max_ious, max_ious_idx = ious.max(dim = 0)
-
+    
+    gt_difficult = torch.zeros([gt_boxes.size()[0],1])
     not_difficult_gt_mask = gt_difficult == 0
     gt_num = not_difficult_gt_mask.sum().item()
+    #import pdb
+    #pdb.set_trace()
+    
     if gt_num == 0:
         return 0, [], []
 
@@ -668,4 +672,6 @@ def calculate_ap(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thr
     gt_num, tp_list, confidence_score = calculate_tp(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thresh = 0.5)
     recall, precision = calculate_pr(gt_num, tp_list, confidence_score)
     ap = voc_ap(recall, precision)
+    #import pdb
+    #pdb.set_trace()
     return ap
