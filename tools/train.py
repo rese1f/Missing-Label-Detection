@@ -33,8 +33,8 @@ if __name__ == '__main__':
     
     model = Model(cfg='models/yolov5m.yaml', ch=3, nc=1)
     model = nn.DataParallel(model).cuda()
-    # if args.checkpoint:
-    #     model.load_state_dict(torch.load(os.path.join('./checkpoints', args.checkpoint)))
+    if args.checkpoint:
+        model.load_state_dict(torch.load(os.path.join('./checkpoints', args.checkpoint)))
 
     trainset = CocoDetection(args.dataset, 'train', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
@@ -101,4 +101,3 @@ if __name__ == '__main__':
         
     writer.close()
     torch.save(model.state_dict(), os.path.join('checkpoints', args.name+'.pth'))
-       
