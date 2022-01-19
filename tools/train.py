@@ -18,7 +18,7 @@ from configs import parse_args
 from utils.criterion import *
 from utils.datasets import CocoDetection
 from models.yolo import Model
-from utils.general import non_max_suppression, make_box
+from utils.general import non_max_suppression, make_box, calculate_ap
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=None, threshold=4096, edgeitems=None, linewidth=None, profile=None)
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     if args.checkpoint:
         model.load_state_dict(torch.load(os.path.join('./checkpoints', args.checkpoint)))
 
-    trainset = CocoDetection(args.dataset, 'train', args.size)
+    trainset = CocoDetection(args.dataset, 'val', args.size)
     valset = CocoDetection(args.dataset, 'val', args.size)
     train_iter = DataLoader(trainset,
                             batch_size=args.batch_size,
@@ -79,24 +79,19 @@ if __name__ == '__main__':
         writer.add_scalar('box_loss', box_loss, epoch)
         writer.add_scalar('obj_loss', obj_loss, epoch)
         
-        if args.val and (epoch % 20 == 10):
+        if args.val and (epoch % 10 == 0):
             model.eval()
+            ap50_list = list()
             for i, (img, targets) in enumerate(val_iter):
                 img, targets = img.cuda(), targets.cuda()
                 p, _ = model(img)
                 pred = non_max_suppression(p)
-                if (i == 0):
-                    p, _ = model(img)
-                    pred = non_max_suppression(p)[0]
-                    try:
-                        pred_box_tensor, score = pred[:,:4], pred[:,4]
-                        gt_box_tensor = make_box(targets[:,2:])
-                        img = img.squeeze(0)
-                        score_str = [str(x)[:5] for x in score.tolist()]
-                        writer.add_image_with_boxes('gt', img, gt_box_tensor, global_step=i)
-                        writer.add_image_with_boxes('pred', img, pred_box_tensor, global_step=i, labels=score_str)
-                    except:
-                        pass
+                pred_box_tensor, score = pred[:,:4], pred[:,4]
+                gt_box_tensor = make_box(targets[:,2:])
+                ap50 = calculate_ap(pred_box_tensor, score, gt_box_tensor,iou_thresh = 0.5)
+                ap50_list.append(ap50)
+            print("ap50:", np.mean(ap50_list))
+            writer.add_scalar('ap50', np.mean(ap50_list), epoch)
         pbar.update(1)
         
     writer.close()

@@ -537,7 +537,7 @@ def make_box(box):
     return 640*torch.stack([box[:,0]-0.5*box[:,2],box[:,1]-0.5*box[:,3],box[:,0]+0.5*box[:,2],box[:,1]+0.5*box[:,3]]).T
  
  
-def calculate_tp(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thresh = 0.5):
+def calculate_tp(pred_boxes, pred_scores, gt_boxes, iou_thresh, gt_difficult = None):
     """
         calculate tp/fp for all predicted bboxes for one class of one image.
         对于匹配到同一gt的不同bboxes，让score最高tp = 1，其它的tp = 0
@@ -575,17 +575,16 @@ def calculate_tp(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thr
     # 每个预测框的最大iou所对应的gt记为其匹配的gt
     max_ious, max_ious_idx = ious.max(dim = 0)
     
-    gt_difficult = torch.zeros([gt_boxes.size()[0],1])
+    gt_difficult = torch.zeros(gt_boxes.size()[0])
     not_difficult_gt_mask = gt_difficult == 0
     gt_num = not_difficult_gt_mask.sum().item()
-    #import pdb
-    #pdb.set_trace()
-    
+
     if gt_num == 0:
         return 0, [], []
 
     # 保留 max_iou 中属于 非difficult 目标的预测框，即应该去掉与 difficult gt 相匹配的预测框，不参与p-r计算
     # 如果去掉与 difficult gt 对应的iou分数后，候选框的最大iou依然没有发生改变，则可认为此候选框不与difficult gt相匹配，应该保留
+
     not_difficult_pb_mask = (ious[not_difficult_gt_mask].max(dim = 0)[0] == max_ious)
     max_ious, max_ious_idx = max_ious[not_difficult_pb_mask], max_ious_idx[not_difficult_pb_mask]
     if max_ious_idx.numel() == 0:
@@ -668,10 +667,8 @@ def voc_ap(rec, prec, use_07_metric = False):
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
 
-def calculate_ap(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thresh = 0.5):
-    gt_num, tp_list, confidence_score = calculate_tp(pred_boxes, pred_scores, gt_boxes, gt_difficult = None, iou_thresh = 0.5)
+def calculate_ap(pred_boxes, pred_scores, gt_boxes, iou_thresh, gt_difficult = None):
+    gt_num, tp_list, confidence_score = calculate_tp(pred_boxes, pred_scores, gt_boxes, iou_thresh, gt_difficult = None)
     recall, precision = calculate_pr(gt_num, tp_list, confidence_score)
     ap = voc_ap(recall, precision)
-    #import pdb
-    #pdb.set_trace()
     return ap

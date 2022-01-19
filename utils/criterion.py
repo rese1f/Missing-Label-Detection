@@ -1,6 +1,7 @@
 from pdb import set_trace
 import torch
 import torch.nn as nn
+from torch.nn.modules.loss import BCELoss
 
 from utils.metrics import bbox_iou
 from utils.torch_utils import is_parallel
@@ -102,15 +103,18 @@ class ComputeLoss:
         # Define criteria
         BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['cls_pw']], device=device))
         BCEobj = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['obj_pw']], device=device))
+        # BCEobj = BCEBlurWithLogitsLoss()
+        # BCEobj = QFocalLoss(BCEobj, gamma=2, alpha=0.25)
+        BCEobj = FocalLoss(BCEobj)
 
         # Class label smoothing https://arxiv.org/pdf/1902.04103.pdf eqn 3
         self.cp, self.cn = smooth_BCE(eps=h.get('label_smoothing', 0.0))  # positive, negative BCE targets
 
         # Focal loss
-        g = h['fl_gamma']  # focal loss gamma
-        if g > 0:
-            BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
-
+        # g = h['fl_gamma']  # focal loss gamma
+        # if g > 0:
+        #     BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
+        
         det = model.module.model[-1] if is_parallel(model) else model.model[-1]  # Detect() module
         self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.25, 0.06, 0.02])  # P3-P7
         self.ssi = list(det.stride).index(16) if autobalance else 0  # stride 16 index
@@ -147,7 +151,7 @@ class ComputeLoss:
                 sort_id = torch.argsort(score_iou)
                 b, a, gj, gi, score_iou = b[sort_id], a[sort_id], gj[sort_id], gi[sort_id], score_iou[sort_id]
             tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * score_iou  # iou ratio
-
+            
             # Classification
             # if self.nc > 1:  # cls loss (only if multiple classes)
             #     t = torch.full_like(ps[:, 5:], self.cn, device=device)  # targets

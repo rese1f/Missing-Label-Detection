@@ -6,9 +6,9 @@ def parse_args():
                         help='name for test')
     parser.add_argument('--dataset', default='/mnt/sdb/MLD', type=str,
                         help='path to dataset')
-    parser.add_argument('--checkpoint', default='',type=str,
+    parser.add_argument('--checkpoint', default='epoch_50.pth',type=str,
                         help='name of checkpoint model weight')
-    parser.add_argument('--batch-size', default=32, type=int,
+    parser.add_argument('--batch-size', default=16, type=int,
                         help='training batch size')
     parser.add_argument('--epoch', default=300, type=int,
                         help='training epoch')
