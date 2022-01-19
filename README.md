@@ -8,7 +8,7 @@
 - Han, Yang
 - Mu, Xie
 
-*The whole report is on* [here](Missing Label Detection.pdf)
+*The whole report is on* [here](https://github.com/Reself-C/Missing-Label-Detection/blob/main/Missing%20Label%20Detection.pdf)
 
 ### Project Background
 
