@@ -8,6 +8,8 @@
 - Han, Yang
 - Mu, Xie
 
+*The whole report is on* [here](Missing Label Detection.pdf)
+
 ### Project Background
 
 Impressive results have been achieved on object detection benchmarks by supervised object detection
