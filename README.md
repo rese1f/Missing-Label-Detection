@@ -60,6 +60,3 @@ We do the statistic about dataset. The following shows the distribution of image
 - Although train set has 13 kinds of shapes and validation set has 25 kinds of shapes, the distribution is interesting. Basically, images are distributed in two main sizes. For train set, 81% distributed in [3,640,640] and 17% in [3,500,500]. For validation set, 82% in [3,640,640] and 14% in [3,500,500]. Other image size types only have relatively small percentages of distributions compared with two main size types.
 - We also notice that the percentage of images with no label in train set is high, about 15.1%, but all images in validation set are labeled. Therefore, we need to consider how to treat those images with no label in train set. Currently, we decided to add a target box to cover the whole image and modify the loss function accordingly.
 The following figures show the distribution statistic of dataset.
-
-![ds1](image/ds1.png)
-![ds2](image/ds2.png)
